@@ -275,7 +275,7 @@ class BaseCursor(Generic[ConnectionType, Row]):
 
         if pipeline_mode:
             logger.debug("sending query '%s' in pipeline", pgq.query.decode())
-            key = self._conn._prepared.handle(pgq, prep, name)
+            key = self._conn._prepared.maybe_add_to_cache(pgq, prep, name)
             if key is not None:
                 queued: "PipelineQueueItem" = (self, (key, prep, name))
             else:
