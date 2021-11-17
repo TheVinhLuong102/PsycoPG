@@ -212,6 +212,10 @@ class BaseCursor(Generic[ConnectionType, Row]):
         else:
             assert results is not None
             self._execute_results(results)
+
+        for cmd in self._conn._prepared.get_maintenance_commands():
+            yield from self._conn._exec_command(cmd)
+
         self._last_query = query
 
     def _executemany_gen(
@@ -234,6 +238,9 @@ class BaseCursor(Generic[ConnectionType, Row]):
             else:
                 assert results is not None
                 self._execute_results(results)
+
+        for cmd in self._conn._prepared.get_maintenance_commands():
+            yield from self._conn._exec_command(cmd)
 
         self._last_query = query
 
@@ -290,9 +297,7 @@ class BaseCursor(Generic[ConnectionType, Row]):
             # Update the prepare state of the query.
             # If an operation requires to flush our prepared statements cache, do it.
             if key is not None:
-                cmd = self._conn._prepared.validate(key, prep, name, results)
-                if cmd:
-                    yield from self._conn._exec_command(cmd)
+                self._conn._prepared.validate(key, prep, name, results)
 
             return results
 
